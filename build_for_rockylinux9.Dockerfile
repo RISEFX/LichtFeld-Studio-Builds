@@ -68,7 +68,7 @@ RUN echo 'export VCPKG_ROOT=${HOME}/vcpkg' >> /home/${USERNAME}/.bashrc && \
     echo 'export PATH=$VCPKG_ROOT:$PATH' >> /home/${USERNAME}/.bashrc
 
 RUN echo "Download and build LichtFeld-Studio ..." && \
-    git clone https://github.com/MrNeRF/LichtFeld-Studio.git && \
+    git clone --branch v0.4.0 --recursive --depth 1 https://github.com/MrNeRF/LichtFeld-Studio.git && \
     cd LichtFeld-Studio && \
     scl enable gcc-toolset-14 bash && \
     cmake -B build \
