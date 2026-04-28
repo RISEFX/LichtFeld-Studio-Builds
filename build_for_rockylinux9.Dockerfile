@@ -1,8 +1,10 @@
 FROM nvidia/cuda:13.0.0-devel-rockylinux9
 
-# BUILD:    docker build --progress=plain --build-arg USER_ID=$(id -u) --build-arg USERNAME=$(id -un) -t lichtfeld-studio -f build.Dockerfile .
-# RUN:      docker run --rm --runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=0 -e NVIDIA_DRIVER_CAPABILITIES=compute,utility -it --name lichtfeld-studio lichtfeld-studio /bin/bash
+# This Dockerfile can be used to build a portable version of Lichtfeld-Studio
+# for AlmaLinux 9 or Rocky Linux 9 systems within a GitHub CI process or on a
+# local workstation.
 
+ARG LFS_VERSION=v0.5.0
 ARG USER_ID
 ARG USERNAME
 
@@ -12,21 +14,31 @@ RUN dnf upgrade -y \
     
 RUN dnf groupinstall "Development Tools" -y && \
     dnf install -y \
+    autoconf271 \
+    autoconf-archive \
     ca-certificates \
     gcc-toolset-14-gcc \
     gcc-toolset-14-gcc-c++ \
     git \
     gnupg2 \
     kernel-devel \
+    libX11-devel \
     libXcursor-devel \
-    libxkbcommon-devel \
+    libXext-devel \
+    libXft-devel \
+    libXfixes-devel \
     libXi-devel \
     libXinerama-devel \
+    libxkbcommon-devel \
     libXrandr-devel \
+    libXtst-devel \
     lsb_release \
     mesa-libGLU-devel \
+    nano \
+    nasm \
     ninja-build \
     openssh-clients \
+    patchelf \
     perl-FindBin \
     perl-IPC-Cmd \
     perl-Time-Piece \
@@ -46,13 +58,13 @@ RUN echo "Download and install CMake ..." && \
     chmod +x cmake-4.0.3-linux-x86_64.sh && \
     ./cmake-4.0.3-linux-x86_64.sh --skip-license --prefix=/usr/local && \
     rm cmake-4.0.3-linux-x86_64.sh
-    
+
 RUN useradd -u ${USER_ID} -m -s /bin/bash ${USERNAME} && \
     usermod -aG wheel "${USERNAME}" && \
     echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-WORKDIR /home/${USERNAME}
 USER ${USERNAME}
+WORKDIR /home/${USERNAME}
 
 RUN echo "Download and install libtorch ..." && \
     wget -q https://download.pytorch.org/libtorch/cu130/libtorch-shared-with-deps-2.9.0%2Bcu130.zip -O /tmp/libtorch.zip && \
@@ -67,19 +79,16 @@ RUN echo "Download and install vcpkg ..." && \
 RUN echo 'export VCPKG_ROOT=${HOME}/vcpkg' >> /home/${USERNAME}/.bashrc && \
     echo 'export PATH=$VCPKG_ROOT:$PATH' >> /home/${USERNAME}/.bashrc
 
-RUN echo "Download and build LichtFeld-Studio ..." && \
-    git clone --branch v0.4.0 --recursive --depth 1 https://github.com/MrNeRF/LichtFeld-Studio.git && \
-    cd LichtFeld-Studio && \
-    scl enable gcc-toolset-14 bash && \
-    cmake -B build \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DBUILD_PORTABLE=True \
-        -DCMAKE_TOOLCHAIN_FILE="${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" \
-        -DCMAKE_MAKE_PROGRAM=/usr/bin/ninja \
-        -G Ninja \
-        -DCMAKE_CUDA_COMPILER=/usr/local/cuda-13.0/bin/nvcc \
-        -DCMAKE_C_COMPILER=/opt/rh/gcc-toolset-14/root/usr/bin/gcc \
-        -DCMAKE_CXX_COMPILER=/opt/rh/gcc-toolset-14/root/usr/bin/g++ && \
-    cmake --build build -- -j$(nproc) && \
-    cmake --install build --prefix install
+# The version for SDL and ImGUI needs to be specified to a specific version!
+COPY ./vcpkg.json /tmp/vcpkg.json
 
+# It isn't possible to build LichtFeld-Studio directly in a Docker `build` call,
+# because the build process needs NVIDIA CUDA libraries which are only available
+# after starting a container with the NVIDIA runtime container library.
+COPY --chmod=755 --chown=${USERNAME}:${USERNAME} ./build_lichtfeld_studio.sh build_lichtfeld_studio.sh
+
+RUN echo 'source /opt/rh/autoconf271/enable' >> /home/${USERNAME}/.bashrc && \
+    echo 'source /opt/rh/gcc-toolset-14/enable' >> /home/${USERNAME}/.bashrc
+
+ENV USERNAME=${USERNAME}
+ENV LFS_VERSION=${LFS_VERSION}

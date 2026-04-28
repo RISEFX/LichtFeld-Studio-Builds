@@ -1,0 +1,70 @@
+{
+  "builtin-baseline": "c3867e714dd3a51c272826eea77267876517ed99",
+  "dependencies": [
+    "args",
+    "boost-preprocessor",
+    "boost-regex",
+    {
+      "name": "ffmpeg",
+      "features": [
+        "avcodec",
+        "avformat",
+        "swscale",
+        "nvcodec",
+        "x264"
+      ]
+    },
+    "freetype",
+    "glad",
+    "sdl3",
+    "glm",
+    "gtest",
+    {
+      "name": "imgui",
+      "features": [
+        "docking-experimental",
+        "freetype",
+        "opengl3-binding",
+        "sdl3-binding"
+      ]
+    },
+    "implot",
+    "libarchive",
+    "libwebp",
+    "nativefiledialog-extended",
+    "nlohmann-json",
+    {
+      "name": "openimageio",
+      "features": [
+        "webp"
+      ]
+    },
+    "spdlog",
+    "tbb",
+    "usd",
+    {
+      "name": "python3",
+      "features": [
+        "extensions"
+      ]
+    },
+    "nanobind",
+    "assimp",
+    {
+      "name": "rmlui",
+      "features": [
+        "svg"
+      ]
+    }
+  ],
+  "overrides": [
+    {
+      "name": "sdl3",
+      "version": "3.2.28"
+    },
+    {
+        "name": "imgui",
+        "version": "1.91.9"
+    }
+  ]
+}
