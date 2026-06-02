@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
+set -e -o pipefail
+
 #
-# Custom fixes and build/inistall steps for Version v0.5.0:
+# Custom fixes and build/inistall steps for Version v0.5.2:
 #
 # 1. Create the directory '/python3.12' to install Python
 # 2. Install LichtFeld-Studio
@@ -10,17 +12,18 @@
 # 5. Fix wrong library path in run script
 #
 
-git clone --branch ${LFS_VERSION} --recursive --depth 1 https://github.com/MrNeRF/LichtFeld-Studio.git
-cd LichtFeld-Studio
+git clone --branch ${LFS_VERSION} --recursive --depth 1 https://github.com/MrNeRF/LichtFeld-Studio.git $HOME/LichtFeld-Studio
+cd $HOME/LichtFeld-Studio
 git submodule update --init --recursive
 
-mv /tmp/vcpkg.json ./
+git apply /tmp/portable_fixes.patch
 
 cmake -B build \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_PORTABLE=True \
     -DCMAKE_TOOLCHAIN_FILE="${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" \
     -DCMAKE_MAKE_PROGRAM=/usr/bin/ninja \
+    -DVCPKG_TARGET_TRIPLET=x64-linux \
     -G Ninja \
     -DCMAKE_CUDA_COMPILER=/usr/local/cuda-13.0/bin/nvcc \
     -DCUDA_DEVICE_DEBUG=OFF \
@@ -41,6 +44,6 @@ cp -r /python3.12 install/lib
 patchelf --set-rpath '$ORIGIN' install/lib64/liblfs_python_runtime.so
 sed -i 's/lib/lib64/' install/bin/run_lichtfeld.sh
 
-# "ZIP final build of LichtFeld-Studio ..."
-cd LichtFeld-Studio 
+# ZIP final build of LichtFeld-Studio ...
+cd $HOME/LichtFeld-Studio
 zip -r /tmp/LichtFeld-Studio-Portable-$(date -u +%Y%m%d)-${LFS_VERSION}.zip install/

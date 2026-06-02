@@ -1,0 +1,32 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 6c67437..2854039 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1017,6 +1017,9 @@ if(BUILD_PORTABLE)
+     # Search directories for runtime dependencies (quoted for paths with spaces on Windows)
+     set(_SEARCH_DIRS_STR "\"${CMAKE_BINARY_DIR}\" \"${CMAKE_BINARY_DIR}/external/nvImageCodec\" \"${CUDAToolkit_BIN_DIR}\" \"${CUDAToolkit_LIBRARY_DIR}\"")
+ 
++    # The search path needs to be expanded because libraries of OpenUSD couldn't be found for a portable install!
++    list(APPEND _SEARCH_DIRS_STR ${CMAKE_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/lib)
++
+     # Helper: bundle runtime dependencies for a target
+     function(bundle_runtime_deps TARGET_FILE IS_LIBRARY)
+         if(IS_LIBRARY)
+diff --git a/vcpkg.json b/vcpkg.json
+old mode 100644
+new mode 100755
+index 3c5a6eb..f6dcef9
+--- a/vcpkg.json
++++ b/vcpkg.json
+@@ -56,5 +56,11 @@
+         "svg"
+       ]
+     }
++  ],
++  "overrides": [
++    {
++      "name": "sdl3",
++      "version": "3.2.28"
++    }
+   ]
+ }

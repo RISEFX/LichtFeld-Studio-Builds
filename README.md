@@ -16,5 +16,5 @@ docker run -it --rm --runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=0 -e NVIDIA_DRIVE
 
 **Command to copy final build of LichtFeld-Studio to host maschine:**
 ```bash
-docker cp lichtfeld-studio:/tmp/LichtFeld-Studio-Portable-$(date -u +%Y%m%d)-v0.5.0.zip /tmp
+docker cp lichtfeld-studio:/tmp/LichtFeld-Studio-Portable-$(date -u +%Y%m%d)-v0.5.2.zip /tmp
 ```

@@ -4,7 +4,7 @@ FROM nvidia/cuda:13.0.0-devel-rockylinux9
 # for AlmaLinux 9 or Rocky Linux 9 systems within a GitHub CI process or on a
 # local workstation.
 
-ARG LFS_VERSION=v0.5.0
+ARG LFS_VERSION=v0.5.2
 ARG USER_ID
 ARG USERNAME
 
@@ -80,7 +80,7 @@ RUN echo 'export VCPKG_ROOT=${HOME}/vcpkg' >> /home/${USERNAME}/.bashrc && \
     echo 'export PATH=$VCPKG_ROOT:$PATH' >> /home/${USERNAME}/.bashrc
 
 # The version for SDL and ImGUI needs to be specified to a specific version!
-COPY ./vcpkg.json /tmp/vcpkg.json
+COPY --chmod=755 --chown=${USERNAME}:${USERNAME} ./portable_fixes.patch /tmp/portable_fixes.patch
 
 # It isn't possible to build LichtFeld-Studio directly in a Docker `build` call,
 # because the build process needs NVIDIA CUDA libraries which are only available
